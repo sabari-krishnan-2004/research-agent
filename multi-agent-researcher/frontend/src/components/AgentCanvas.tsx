@@ -10,7 +10,7 @@ import {
   BackgroundVariant
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Play, Search, ShieldCheck, FileText } from 'lucide-react';
+import { Play, Search, ShieldCheck, FileText, Cpu } from 'lucide-react';
 import type { AgentNodeName } from '../types/agent';
 
 // Custom node styling and visualization
@@ -19,36 +19,40 @@ const CustomNode = React.memo(({ data }: any) => {
   
   return (
     <div 
-      className={`relative bg-slate-900 border border-slate-700 text-slate-100 p-4 rounded-xl shadow-lg w-52 transition-all duration-300 ${
-        isActive ? 'glow-active border-cyan-400' : isCompleted ? 'glow-completed border-indigo-500' : 'opacity-70'
+      className={`relative glass-panel text-slate-100 p-4.5 rounded-2xl w-56 border transition-all duration-500 ease-out select-none ${
+        isActive 
+          ? 'glow-active scale-[1.03] z-20 border-white bg-white/[0.04]' 
+          : isCompleted 
+            ? 'glow-completed border-white/20 bg-white/[0.01]' 
+            : 'border-white/5 opacity-30 bg-[#050505]/40 hover:opacity-50 hover:border-white/10'
       }`}
     >
       {isActive && (
-        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-500"></span>
+        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-30">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
         </span>
       )}
       
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg transition-colors ${
+      <div className="flex items-center gap-3.5">
+        <div className={`p-2.5 rounded-xl border transition-all duration-300 ${
           isActive 
-            ? 'bg-cyan-500/20 text-cyan-400' 
+            ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)] border-white' 
             : isCompleted 
-              ? 'bg-indigo-500/20 text-indigo-400' 
-              : 'bg-slate-800 text-slate-400'
+              ? 'bg-white/5 text-slate-300 border-white/10 shadow-[0_0_8px_rgba(255,255,255,0.05)]' 
+              : 'bg-[#0a0a0a] border-white/5 text-slate-600'
         }`}>
-          <Icon className="w-5 h-5" />
+          <Icon className="w-4.5 h-4.5" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm truncate">{label}</h3>
-          <p className="text-[10px] text-slate-400 font-normal leading-tight mt-0.5">{description}</p>
+          <h3 className="font-black text-[11px] uppercase tracking-widest text-slate-200 truncate">{label}</h3>
+          <p className="text-[10px] text-slate-500 font-medium leading-relaxed mt-0.5">{description}</p>
         </div>
       </div>
       
-      {/* Node handles for React Flow routing */}
-      <Handle type="target" position={Position.Left} className="w-2 h-2 !bg-slate-600 border-none" />
-      <Handle type="source" position={Position.Right} className="w-2 h-2 !bg-slate-600 border-none" />
+      {/* Node handles styled via index.css */}
+      <Handle type="target" position={Position.Left} className="react-flow__handle" />
+      <Handle type="source" position={Position.Right} className="react-flow__handle" />
     </div>
   );
 });
@@ -70,7 +74,7 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
     {
       id: 'supervisor',
       type: 'custom',
-      position: { x: 40, y: 120 },
+      position: { x: 30, y: 120 },
       data: {
         label: 'Supervisor',
         description: 'Deconstructs queries',
@@ -94,7 +98,7 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
     {
       id: 'critic',
       type: 'custom',
-      position: { x: 560, y: 120 },
+      position: { x: 570, y: 120 },
       data: {
         label: 'Critic Node',
         description: 'Evaluates fact coverage',
@@ -106,7 +110,7 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
     {
       id: 'synthesizer',
       type: 'custom',
-      position: { x: 820, y: 120 },
+      position: { x: 840, y: 120 },
       data: {
         label: 'Synthesizer',
         description: 'Compiles final report',
@@ -145,7 +149,6 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
       target: 'researcher',
       animated: false,
       className: '',
-      // Refinement curve styling
       type: 'smoothstep',
       pathOptions: { borderRadius: 20 },
       style: { strokeDasharray: '5,5' },
@@ -191,7 +194,6 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
           isActive = activeNode === 'synthesizer';
           isCompleted = completedNodes.includes('critic');
         } else if (source === 'critic' && target === 'researcher' && id === 'e-critic-researcher') {
-          // If loops are happening and researcher active again
           isActive = activeNode === 'researcher' && completedNodes.includes('critic');
           isCompleted = false;
         }
@@ -206,10 +208,33 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
   }, [activeNode, completedNodes, setEdges]);
 
   return (
-    <div className="w-full h-[320px] bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden relative shadow-inner">
-      <div className="absolute top-4 left-4 z-10">
-        <h2 className="text-xs uppercase tracking-widest text-slate-500 font-semibold">Agent Workflow Map</h2>
+    <div className="w-full h-[320px] bg-black/40 rounded-2xl border border-white/5 overflow-hidden relative shadow-2xl glass-panel">
+      {/* Canvas Header Toolbar */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none select-none">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-white/5 text-white border border-white/10 shadow-inner">
+            <Cpu className="w-3.5 h-3.5" />
+          </div>
+          <h2 className="text-[10px] uppercase tracking-widest text-slate-350 font-black">Swarm Agent Canvas</h2>
+        </div>
+        
+        {/* State Legends */}
+        <div className="flex items-center gap-4 bg-black/80 px-3 py-1.5 border border-white/5 rounded-xl shadow-inner text-[8px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-white/5 border border-white/5" />
+            <span>Idle</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse shadow-[0_0_6px_#fff]" />
+            <span className="text-white">Active</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
+            <span className="text-slate-300 font-semibold">Done</span>
+          </div>
+        </div>
       </div>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -227,10 +252,11 @@ export const AgentCanvas: React.FC<AgentCanvasProps> = ({ activeNode, completedN
         zoomOnDoubleClick={false}
         preventScrolling={false}
       >
-        <Background variant={BackgroundVariant.Dots} color="#1e293b" gap={16} size={1} />
-        <Controls showInteractive={false} className="!bg-slate-900 !border-slate-850 !shadow-lg" />
+        <Background variant={BackgroundVariant.Dots} color="#151515" gap={18} size={1} />
+        <Controls showInteractive={false} className="!bg-black/90 !border-white/5 !shadow-xl !rounded-xl overflow-hidden" />
       </ReactFlow>
     </div>
   );
 };
+
 export default AgentCanvas;
